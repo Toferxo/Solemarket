@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SoleMarket{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+  {% load static %}
+  <link href="{% static 'css/main.css' %}" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg sticky-top" id="mainNav">
+  <div class="container-fluid px-4">
+    <a class="navbar-brand logo" href="{% url 'index' %}">
+      SOLEMARKET<span class="logo-dot"></span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" href="{% url 'index' %}">
+            <i class="bi bi-grid"></i> Explorar
+          </a>
+        </li>
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link {% if 'mensajes' in request.path %}active{% endif %}" href="{% url 'inbox' %}">
+            <i class="bi bi-chat"></i> Mensajes
+            {% if unread_count %}<span class="badge-dot"></span>{% endif %}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'mis_publicaciones' %}active{% endif %}" href="{% url 'mis_publicaciones' %}">
+            <i class="bi bi-person"></i> Mis pares
+          </a>
+        </li>
+        {% endif %}
+      </ul>
+
+      <div class="d-flex align-items-center gap-2">
+        <span class="free-pill"><i class="bi bi-check-circle-fill"></i> Gratis</span>
+        {% if user.is_authenticated %}
+          <a href="{% url 'listing_create' %}" class="btn btn-sm btn-dark">
+            <i class="bi bi-plus"></i> Publicar par
+          </a>
+          <div class="dropdown">
+            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+              {{ user.username }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'seller_profile' user.username %}"><i class="bi bi-person-circle me-2"></i>Mi perfil</a></li>
+              <li><a class="dropdown-item" href="{% url 'mis_publicaciones' %}"><i class="bi bi-box me-2"></i>Mis publicaciones</a></li>
+              <li><a class="dropdown-item" href="{% url 'favoritos' %}"><i class="bi bi-heart me-2"></i>Favoritos</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</a></li>
+            </ul>
+          </div>
+        {% else %}
+          <a href="{% url 'login' %}" class="btn btn-sm btn-outline-secondary">Iniciar sesión</a>
+          <a href="{% url 'register' %}" class="btn btn-sm btn-dark">Registrarse</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</nav>
+
+{% if messages %}
+<div class="container-fluid px-4 mt-2">
+  {% for msg in messages %}
+  <div class="alert alert-{{ msg.tags|default:'info' }} alert-dismissible fade show py-2" role="alert">
+    {{ msg }} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% block content %}{% endblock %}
+
+<footer class="mt-5 py-4 border-top">
+  <div class="container-fluid px-4">
+    <div class="row align-items-center">
+      <div class="col-auto">
+        <span class="logo" style="font-size:18px">SOLEMARKET<span class="logo-dot"></span></span>
+      </div>
+      <div class="col text-secondary" style="font-size:12px">
+        El mercado de zapatillas de Chile · 100% gratis
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

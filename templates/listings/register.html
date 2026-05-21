@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Crear cuenta — SoleMarket{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:480px">
+  <div class="text-center mb-4">
+    <h1 class="display-banner mb-1" style="font-size:30px">CREAR CUENTA</h1>
+    <p class="text-secondary" style="font-size:13px">Gratis — publica y compra zapatillas en Chile</p>
+  </div>
+  <div class="card border rounded p-4">
+    <form method="POST">{% csrf_token %}{{ form|crispy }}<button type="submit" class="btn btn-dark w-100 mt-2">Crear cuenta</button></form>
+    <p class="text-center mt-3 text-secondary" style="font-size:13px">¿Ya tienes cuenta? <a href="{% url 'login' %}">Iniciar sesión</a></p>
+  </div>
+</div>
+{% endblock %}

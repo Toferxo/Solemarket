@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}SoleMarket — Compra y vende zapatillas en Chile{% endblock %}
+
+{% block content %}
+
+<!-- Banner -->
+<div class="sell-banner border-bottom">
+  <div class="container-fluid px-4 py-4">
+    <div class="row align-items-end g-4">
+      <div class="col-lg-7">
+        <span class="free-pill mb-2 d-inline-flex"><i class="bi bi-gift me-1"></i> 100% gratis — sin comisiones</span>
+        <h1 class="display-banner mb-2">VENDE TUS<br>ZAPATILLAS</h1>
+        <p class="text-secondary mb-3">Publica tu par en minutos y llega a compradores en todo Chile.</p>
+        <a href="{% url 'listing_create' %}" class="btn btn-dark btn-sm px-3 me-2">
+          <i class="bi bi-camera me-1"></i> Publicar par
+        </a>
+        <div class="how-steps d-inline-flex mt-3">
+          <div class="how-step"><span class="how-n">1</span><small>Sube fotos</small></div>
+          <div class="how-step"><span class="how-n">2</span><small>Agrega datos</small></div>
+          <div class="how-step"><span class="how-n">3</span><small>Publica gratis</small></div>
+        </div>
+      </div>
+      <div class="col-lg-5">
+        <div class="d-flex gap-4 justify-content-lg-end">
+          <div class="text-lg-end">
+            <div class="stat-num">{{ total }}</div>
+            <div class="stat-label">publicaciones</div>
+          </div>
+          <div class="text-lg-end">
+            <div class="stat-num">Gratis</div>
+            <div class="stat-label">para publicar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="filters-bar border-bottom">
+  <div class="container-fluid px-4 py-2">
+    <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+      <div class="input-search">
+        <i class="bi bi-search"></i>
+        <input type="text" name="q" value="{{ filtros.q }}" placeholder="Marca, modelo..." class="form-control form-control-sm" style="padding-left:30px">
+      </div>
+      {% for valor, label in marcas %}
+      <button type="submit" name="marca" value="{{ valor }}"
+        class="chip {% if filtros.marca == valor %}on{% endif %}">{{ valor }}</button>
+      {% endfor %}
+      <button type="submit" name="condicion" value="new"
+        class="chip {% if filtros.condicion == 'new' %}on{% endif %}">Nuevas</button>
+      {% if filtros.marca or filtros.condicion or filtros.q %}
+      <a href="{% url 'index' %}" class="chip">✕ Limpiar</a>
+      {% endif %}
+      <div class="ms-auto d-flex align-items-center gap-1">
+        <small class="text-secondary">Ordenar</small>
+        <select name="orden" class="form-select form-select-sm w-auto border-0 bg-transparent" onchange="this.form.submit()">
+          <option value="-creado" {% if filtros.orden == '-creado' %}selected{% endif %}>Recientes</option>
+          <option value="precio" {% if filtros.orden == 'precio' %}selected{% endif %}>Menor precio</option>
+          <option value="-precio" {% if filtros.orden == '-precio' %}selected{% endif %}>Mayor precio</option>
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Grid -->
+<div class="listings-grid">
+  {% for listing in listings %}
+  <div class="listing-card">
+    <a href="{{ listing.get_absolute_url }}" class="card-link">
+      <div class="card-img-wrap">
+        {% if listing.images.first %}
+        <img src="{{ listing.images.first.imagen.url }}" alt="{{ listing.nombre }}" class="card-img">
+        {% else %}
+        <div class="card-img-placeholder">👟</div>
+        {% endif %}
+        <span class="cond-badge badge-{{ listing.condicion }}">{{ listing.get_condicion_display }}</span>
+      </div>
+      <div class="card-body-inner">
+        <div class="card-brand">{{ listing.marca }}</div>
+        <div class="card-name">{{ listing.nombre }}</div>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="card-size">Talla {{ listing.talla }}</span>
+          <span class="card-price">{{ listing.precio_fmt }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-1">
+          <div class="seller-av" style="background: var(--av-{{ listing.vendedor.username|first|lower }})">
+            {{ listing.vendedor.username|slice:':2'|upper }}
+          </div>
+          <span class="seller-name text-truncate">{{ listing.vendedor.username }}</span>
+          {% with profile=listing.vendedor.seller_profile %}
+          {% if profile.rating_promedio %}
+          <span class="ms-auto card-rating">★ {{ profile.rating_promedio }}</span>
+          {% endif %}
+          {% endwith %}
+        </div>
+      </div>
+    </a>
+    {% if user.is_authenticated %}
+    <button class="fav-btn {% if listing.pk in request.session.favoritos %}on{% endif %}"
+      data-pk="{{ listing.pk }}" onclick="toggleFav(this)">
+      <i class="bi bi-heart{% if listing.pk in request.session.favoritos %}-fill{% endif %}"></i>
+    </button>
+    {% endif %}
+  </div>
+  {% empty %}
+  <div class="empty-state">
+    <i class="bi bi-emoji-frown"></i>
+    <p>No se encontraron zapatillas con ese filtro.</p>
+    <a href="{% url 'listing_create' %}" class="btn btn-dark btn-sm">Sé el primero en publicar</a>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleFav(btn) {
+  const pk = btn.dataset.pk;
+  fetch(`/par/${pk}/favorito/`, {
+    method: 'POST',
+    headers: {'X-CSRFToken': '{{ csrf_token }}'},
+  })
+  .then(r => r.json())
+  .then(data => {
+    const icon = btn.querySelector('i');
+    btn.classList.toggle('on', data.en_favoritos);
+    icon.className = data.en_favoritos ? 'bi bi-heart-fill' : 'bi bi-heart';
+  });
+}
+</script>
+{% endblock %}

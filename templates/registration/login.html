@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Iniciar sesión — SoleMarket{% endblock %}
+{% block content %}
+<div class="container py-5" style="max-width:420px">
+  <div class="text-center mb-4">
+    <h1 class="display-banner mb-1" style="font-size:28px">BIENVENIDO</h1>
+    <p class="text-secondary" style="font-size:13px">Inicia sesión en tu cuenta</p>
+  </div>
+  <div class="card border rounded p-4">
+    <form method="POST">
+      {% csrf_token %}
+      {{ form|crispy }}
+      <button type="submit" class="btn btn-dark w-100 mt-2">Iniciar sesión</button>
+    </form>
+    <p class="text-center mt-3 text-secondary" style="font-size:13px">
+      ¿No tienes cuenta? <a href="{% url 'register' %}">Crear cuenta gratis</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
