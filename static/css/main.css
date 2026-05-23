@@ -299,3 +299,201 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); }
 .btn-send-msg { width: 36px; height: 36px; border-radius: 8px; border: none; background: var(--text-primary); cursor: pointer; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 14px; }
 .btn-send-msg:hover { opacity: .85; }
 .chat-empty { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--text-secondary); font-size: 13px; }
+
+/* ===== SNEAKERHEAD ADDITIONS ===== */
+
+/* Category tabs */
+.cat-tab {
+  font-size: 12px; font-weight: 500;
+  padding: 7px 14px; border-radius: 8px;
+  color: var(--text-secondary);
+  text-decoration: none; white-space: nowrap;
+  transition: all .13s;
+  display: inline-flex; align-items: center;
+}
+.cat-tab:hover, .cat-tab.on {
+  background: var(--text-primary);
+  color: #fff;
+}
+
+/* Condition badges DS / VNDS / Used / Beater */
+.badge-ds   { background: #1a1a1a; color: #fff; }
+.badge-vnds { background: #1D4A2F; color: #fff; }
+.badge-used { background: #F1EFE8; color: #5F5E5A; }
+.badge-beater { background: #4A1D1D; color: #fff; }
+
+/* Box badge */
+.box-badge {
+  position: absolute; bottom: 7px; left: 7px;
+  font-size: 10px; font-weight: 500;
+  padding: 2px 7px; border-radius: 6px;
+  background: #FAEEDA; color: #854F0B;
+}
+
+/* Category pill on card */
+.cat-pill {
+  font-size: 9px; font-weight: 500;
+  padding: 2px 6px; border-radius: 4px;
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.cat-zapatillas { background: #E6F1FB; color: #0C447C; }
+.cat-streetwear { background: #F1EFE8; color: #5F5E5A; }
+.cat-accesorios { background: #E1F5EE; color: #085041; }
+.cat-coleccion  { background: #FAEEDA; color: #854F0B; }
+
+/* Colorway */
+.colorway {
+  font-size: 11px; color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Descuento badge */
+.descuento-badge {
+  font-size: 10px; font-weight: 500;
+  color: #E24B4A; line-height: 1;
+}
+
+/* Condition selector en formulario */
+.frow { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cond-option {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer; text-align: center;
+}
+.cond-option input[type=radio] { display: none; }
+.cond-label {
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 12px; font-weight: 600;
+  letter-spacing: .5px; cursor: pointer;
+  border: 2px solid transparent;
+  transition: all .13s;
+}
+.cond-option input:checked + .cond-label {
+  border-color: var(--text-primary);
+  transform: scale(1.05);
+}
+.cond-option small { font-size: 10px; color: var(--text-secondary); max-width: 80px; line-height: 1.3; }
+
+/* ===== LES FLOS FONT ===== */
+.logo {
+  font-family: 'LesFlos', sans-serif !important;
+  font-weight: 900;
+  font-size: 24px !important;
+  letter-spacing: 1px !important;
+}
+.display-banner {
+  font-family: 'Bebas Neue', cursive !important;
+  font-weight: 400;
+}
+
+/* ===== HERO CAROUSEL ===== */
+.hero-carousel {
+  position: relative;
+  overflow: hidden;
+  height: 340px;
+}
+.hero-slide {
+  display: none;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  opacity: 0;
+  transition: opacity .5s;
+}
+.hero-slide.active {
+  display: flex;
+  opacity: 1;
+}
+.hero-slide-text { color: #fff; }
+.hero-slide-tag {
+  font-size: 10px; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 2px;
+  color: rgba(255,255,255,.6);
+  margin-bottom: 6px;
+}
+.hero-slide-title {
+  font-family: 'Bebas Neue', cursive;
+  font-weight: 400;
+  font-size: 56px;
+  line-height: 1;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.hero-slide-sub {
+  font-size: 12px;
+  color: rgba(255,255,255,.7);
+  margin-bottom: 14px;
+}
+.hero-slide-btn {
+  display: inline-block;
+  background: #fff;
+  color: #111;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 7px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: opacity .13s;
+}
+.hero-slide-btn:hover { opacity: .85; color: #111; }
+.hero-slide-emoji {
+  font-size: 180px;
+  line-height: 1;
+  filter: drop-shadow(0 8px 24px rgba(0,0,0,.4));
+}
+.hero-dots {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+}
+.hero-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.4);
+  cursor: pointer;
+  transition: background .2s;
+}
+.hero-dot.active { background: #fff; }
+
+/* ===== CARDS MEJORADAS ===== */
+.listing-card {
+  border-radius: 0;
+  overflow: hidden;
+  transition: transform .15s, box-shadow .15s;
+}
+.listing-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+  z-index: 1;
+  position: relative;
+}
+.card-img-wrap {
+  height: 200px !important;
+}
+.card-img {
+  transition: transform .3s;
+}
+.listing-card:hover .card-img {
+  transform: scale(1.04);
+}
+.card-name {
+  font-size: 14px !important;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.card-price {
+  font-family: 'Bebas Neue', cursive !important;
+  font-size: 22px !important;
+  font-weight: 400;
+}
+.card-body-inner {
+  padding: 12px 14px 14px !important;
+}

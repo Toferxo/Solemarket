@@ -14,28 +14,34 @@ def index(request):
     listings = Listing.objects.filter(activa=True, vendida=False).select_related('vendedor')
     marca = request.GET.get('marca', '')
     condicion = request.GET.get('condicion', '')
+    categoria = request.GET.get('categoria', '')
     q = request.GET.get('q', '')
     orden = request.GET.get('orden', '-creado')
 
+    if categoria:
+        listings = listings.filter(categoria=categoria)
     if marca:
         listings = listings.filter(marca=marca)
     if condicion:
         listings = listings.filter(condicion=condicion)
     if q:
         listings = listings.filter(
-            Q(nombre__icontains=q) | Q(marca__icontains=q) | Q(vendedor__username__icontains=q)
+            Q(nombre__icontains=q) | Q(marca__icontains=q) |
+            Q(colorway__icontains=q) | Q(vendedor__username__icontains=q)
         )
     if orden in ['precio', '-precio', '-creado']:
         listings = listings.order_by(orden)
 
     marcas = Listing.MARCA_CHOICES
+    categorias = Listing.CATEGORIA_CHOICES
     total = Listing.objects.filter(activa=True, vendida=False).count()
 
     return render(request, 'listings/index.html', {
         'listings': listings,
         'marcas': marcas,
+        'categorias': categorias,
         'total': total,
-        'filtros': {'marca': marca, 'condicion': condicion, 'q': q, 'orden': orden},
+        'filtros': {'marca': marca, 'condicion': condicion, 'q': q, 'orden': orden, 'categoria': categoria},
     })
 
 
@@ -126,17 +132,24 @@ def seller_profile(request, username):
     profile, _ = SellerProfile.objects.get_or_create(user=user)
     listings = Listing.objects.filter(vendedor=user, activa=True, vendida=False)
     reviews = profile.reviews.select_related('autor', 'listing').all()
+
     dist = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
     for r in reviews:
         dist[r.estrellas] = dist.get(r.estrellas, 0) + 1
     total_rev = sum(dist.values())
+
+    # Pasar como lista para evitar get_item en el template
+    dist_list = [
+        {'stars': n, 'count': dist.get(n, 0), 'pct': round(dist.get(n, 0) / total_rev * 100) if total_rev else 0}
+        for n in [5, 4, 3, 2, 1]
+    ]
 
     return render(request, 'listings/seller_profile.html', {
         'profile_user': user,
         'profile': profile,
         'listings': listings,
         'reviews': reviews,
-        'dist': dist,
+        'dist_list': dist_list,
         'total_rev': total_rev,
     })
 

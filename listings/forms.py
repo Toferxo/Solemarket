@@ -5,20 +5,32 @@ from .models import Listing, ListingImage, Review
 
 
 class ListingForm(forms.ModelForm):
+
     class Meta:
         model = Listing
-        fields = ['marca', 'nombre', 'descripcion', 'talla', 'precio', 'condicion', 'despacho', 'ciudad']
+        fields = [
+            'categoria', 'subcategoria', 'marca', 'nombre', 'colorway',
+            'descripcion', 'talla', 'precio', 'precio_original',
+            'condicion', 'caja_original', 'despacho', 'ciudad',
+        ]
         widgets = {
-            'nombre': forms.TextInput(attrs={'placeholder': 'ej: Air Max 90, Yeezy 350 Zebra...'}),
-            'descripcion': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Estado, colores, si tiene caja...'}),
-            'talla': forms.TextInput(attrs={'placeholder': 'ej: 42'}),
+            'nombre': forms.TextInput(attrs={'placeholder': 'ej: Air Max 90, Yeezy 350 Zebra, Supreme Box Logo...'}),
+            'colorway': forms.TextInput(attrs={'placeholder': 'ej: Bred, University Blue, Black/White...'}),
+            'descripcion': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Estado, detalles, historia del par, defectos...'}),
+            'talla': forms.TextInput(attrs={'placeholder': 'ej: 42 (dejar vacío si no aplica)'}),
             'precio': forms.NumberInput(attrs={'placeholder': 'ej: 85000'}),
+            'precio_original': forms.NumberInput(attrs={'placeholder': 'ej: 150000 (opcional)'}),
         }
         labels = {
-            'nombre': 'Modelo',
-            'talla': 'Talla (EUR)',
+            'categoria': 'Categoría',
+            'subcategoria': 'Subcategoría',
+            'nombre': 'Nombre / Modelo',
+            'colorway': 'Colorway',
+            'talla': 'Talla (EUR) — solo zapatillas',
             'precio': 'Precio (CLP)',
+            'precio_original': 'Precio retail original (CLP)',
             'condicion': 'Condición',
+            'caja_original': '¿Tiene caja original?',
             'despacho': 'Tipo de despacho',
         }
 

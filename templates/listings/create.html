@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
-{% block title %}{% if editing %}Editar publicación{% else %}Publicar par{% endif %} — SoleMarket{% endblock %}
+{% block title %}{% if editing %}Editar publicación{% else %}Publicar{% endif %} — SoleMarket{% endblock %}
 
 {% block content %}
-<div class="container py-5" style="max-width:600px">
+<div class="container py-5" style="max-width:620px">
   <div class="mb-4">
-    <h1 class="display-banner mb-1" style="font-size:32px">
-      {% if editing %}EDITAR PUBLICACIÓN{% else %}PUBLICAR ZAPATILLAS{% endif %}
+    <h1 class="display-banner mb-1" style="font-size:30px">
+      {% if editing %}EDITAR{% else %}PUBLICAR{% endif %}
     </h1>
-    <p class="text-secondary" style="font-size:13px">100% gratis — sin comisiones</p>
+    <p class="text-secondary" style="font-size:13px">Zapatillas, streetwear, accesorios — 100% gratis</p>
   </div>
 
   <div class="card border rounded p-4">
@@ -18,57 +18,83 @@
 
       <!-- Fotos -->
       <div class="mb-3">
-        <label class="form-label field-label">Fotos del par (hasta 4)</label>
+        <label class="form-label field-label">Fotos (hasta 4)</label>
         <div class="upload-zone" id="uploadZone">
           <input type="file" name="imagenes" accept="image/*" multiple id="imgInput" onchange="previewImgs(this)">
-          <div id="uploadContent">
-            <i class="bi bi-camera-plus" style="font-size:28px;color:#aaa;display:block;margin-bottom:8px"></i>
+          <div>
+            <i class="bi bi-camera-plus" style="font-size:26px;color:#aaa;display:block;margin-bottom:7px"></i>
             <div style="font-size:13px;font-weight:500">Arrastra fotos o haz clic</div>
             <div style="font-size:11px;color:#aaa;margin-top:3px">JPG, PNG · máx 4 fotos</div>
           </div>
         </div>
         <div class="img-previews" id="imgPreviews"></div>
-        <div class="form-text">Los pares con fotos se venden 3× más rápido.</div>
-        {% if editing %}
-        <div class="mt-2">
-          <small class="text-secondary">Imágenes actuales:</small>
-          <div class="d-flex gap-2 mt-1">
-            {% for img in listing.images.all %}
-            <img src="{{ img.imagen.url }}" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #eee">
-            {% endfor %}
-          </div>
-        </div>
-        {% endif %}
       </div>
 
-      <div class="row g-3">
-        <div class="col-6">{{ form.marca|as_crispy_field }}</div>
-        <div class="col-6">{{ form.condicion|as_crispy_field }}</div>
+      <!-- Categoría y subcategoría -->
+      <div class="frow">
+        <div>{{ form.categoria|as_crispy_field }}</div>
+        <div>{{ form.subcategoria|as_crispy_field }}</div>
       </div>
 
-      {{ form.nombre|as_crispy_field }}
-
-      <div class="row g-3">
-        <div class="col-6">{{ form.talla|as_crispy_field }}</div>
-        <div class="col-6">{{ form.precio|as_crispy_field }}</div>
+      <!-- Marca y nombre -->
+      <div class="frow">
+        <div>{{ form.marca|as_crispy_field }}</div>
+        <div>{{ form.nombre|as_crispy_field }}</div>
       </div>
 
+      <!-- Colorway (solo si es zapatilla) -->
+      {{ form.colorway|as_crispy_field }}
+
+      <!-- Talla y precio -->
+      <div class="frow">
+        <div>{{ form.talla|as_crispy_field }}</div>
+        <div>{{ form.precio|as_crispy_field }}</div>
+      </div>
+
+      <!-- Precio original -->
+      {{ form.precio_original|as_crispy_field }}
+
+      <!-- Descripción -->
       {{ form.descripcion|as_crispy_field }}
 
-      <div class="row g-3">
-        <div class="col-6">{{ form.ciudad|as_crispy_field }}</div>
-        <div class="col-6">{{ form.despacho|as_crispy_field }}</div>
+      <!-- Condición DS / VNDS / Used / Beater -->
+      <div class="mb-3">
+        <label class="form-label field-label">Condición</label>
+        <div class="d-flex gap-2 flex-wrap">
+          {% for val, label in form.fields.condicion.choices %}
+          <label class="cond-option">
+            <input type="radio" name="condicion" value="{{ val }}" {% if form.condicion.value == val or not form.condicion.value and val == 'used' %}checked{% endif %}>
+            <span class="cond-label badge-{{ val }}">{{ val|upper }}</span>
+            <small>{{ label|slice:"7:" }}</small>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Caja original -->
+      <div class="mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="caja_original" id="cajaOriginal" {% if form.caja_original.value %}checked{% endif %}>
+          <label class="form-check-label" for="cajaOriginal" style="font-size:13px">
+            <i class="bi bi-box-seam me-1"></i>Tiene caja original
+          </label>
+        </div>
+      </div>
+
+      <!-- Ciudad y despacho -->
+      <div class="frow">
+        <div>{{ form.ciudad|as_crispy_field }}</div>
+        <div>{{ form.despacho|as_crispy_field }}</div>
       </div>
 
       <div class="alert py-2 mt-2" style="background:#EAF3DE;border:0.5px solid #9FE1CB;border-radius:8px;font-size:12px;color:#3B6D11">
         <i class="bi bi-lightbulb me-1"></i>
-        <strong>Tip de precio:</strong> zapatillas usadas en buen estado se venden al 50–70% del precio original.
+        <strong>Tip:</strong> incluye el colorway y si es DS o VNDS — los sneakerheads buscan exactamente eso.
       </div>
 
       <div class="d-flex gap-2 mt-4">
         <button type="submit" class="btn btn-dark flex-grow-1">
-          <i class="bi bi-check-lg me-2"></i>
-          {% if editing %}Guardar cambios{% else %}Publicar ahora{% endif %}
+          <i class="bi bi-check-lg me-1"></i>{% if editing %}Guardar cambios{% else %}Publicar ahora{% endif %}
         </button>
         <a href="{% url 'index' %}" class="btn btn-outline-secondary">Cancelar</a>
       </div>
@@ -82,8 +108,7 @@
 function previewImgs(input) {
   const previews = document.getElementById('imgPreviews');
   previews.innerHTML = '';
-  const files = Array.from(input.files).slice(0, 4);
-  files.forEach(file => {
+  Array.from(input.files).slice(0, 4).forEach(file => {
     const reader = new FileReader();
     reader.onload = e => {
       const div = document.createElement('div');
@@ -94,13 +119,11 @@ function previewImgs(input) {
     reader.readAsDataURL(file);
   });
 }
-
 const zone = document.getElementById('uploadZone');
 zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
 zone.addEventListener('drop', e => {
-  e.preventDefault();
-  zone.classList.remove('drag');
+  e.preventDefault(); zone.classList.remove('drag');
   document.getElementById('imgInput').files = e.dataTransfer.files;
   previewImgs(document.getElementById('imgInput'));
 });

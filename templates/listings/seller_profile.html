@@ -3,6 +3,8 @@
 {% block content %}
 <div class="container-fluid px-4 py-4">
   <div class="row g-4">
+
+    <!-- Sidebar perfil -->
     <div class="col-lg-4">
       <div class="border rounded p-4 text-center mb-3">
         <div class="seller-av-xl mx-auto mb-3">{{ profile_user.username|slice:':2'|upper }}</div>
@@ -11,70 +13,108 @@
           <i class="bi bi-geo-alt me-1"></i>{{ profile.ciudad }} · Desde {{ profile_user.date_joined|date:'M Y' }}
         </div>
         {% if profile.verificado %}
-        <span class="pill pv mb-2 d-inline-block">✓ Verificado</span>{% endif %}
-        {% if profile.contacto %}<div class="text-secondary mb-2" style="font-size:12px"><i class="bi bi-telephone me-1"></i>{{ profile.contacto }}</div>{% endif %}
+        <span class="badge bg-success mb-2">✓ Verificado</span>
+        {% endif %}
+        {% if profile.contacto %}
+        <div class="text-secondary" style="font-size:12px"><i class="bi bi-telephone me-1"></i>{{ profile.contacto }}</div>
+        {% endif %}
       </div>
+
+      <!-- Rating -->
       <div class="border rounded p-3 mb-3">
-        <div class="d-flex align-items-center gap-3 mb-2">
-          <div style="font-family:'Bebas Neue',cursive;font-size:40px;color:var(--text-primary);line-height:1">{{ profile.rating_promedio }}</div>
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div style="font-family:'Bebas Neue',cursive;font-size:44px;color:var(--text-primary);line-height:1">
+            {{ profile.rating_promedio }}
+          </div>
           <div>
-            <div class="text-warning">{% for i in '12345' %}{% if forloop.counter <= profile.rating_promedio|floatformat:'0' %}★{% else %}<span class="text-secondary">★</span>{% endif %}{% endfor %}</div>
-            <small class="text-secondary">{{ total_rev }} reseñas</small>
+            <div class="text-warning" style="font-size:16px">
+              {% for i in '12345' %}
+                {% if forloop.counter <= profile.rating_promedio|floatformat:'0'|add:'0' %}★{% else %}<span class="text-secondary">★</span>{% endif %}
+              {% endfor %}
+            </div>
+            <small class="text-secondary">{{ total_rev }} reseña{{ total_rev|pluralize }}</small>
           </div>
         </div>
-        {% for n in '54321' %}{% with ni=n|add:0 %}
+        <!-- Barras de distribución -->
+        {% for item in dist_list %}
         <div class="d-flex align-items-center gap-2 mb-1">
-          <small class="text-secondary" style="width:12px">{{ n }}</small>
+          <small class="text-secondary" style="width:12px">{{ item.stars }}</small>
           <div class="flex-grow-1 bg-light rounded" style="height:4px">
-            <div class="bg-warning rounded" style="height:4px;width:{% if total_rev %}{% widthratio dist|get_item:n total_rev 100 %}{% else %}0{% endif %}%"></div>
+            <div class="bg-warning rounded" style="height:4px;width:{{ item.pct }}%"></div>
           </div>
-          <small class="text-secondary" style="width:20px;text-align:right">{{ dist|default_if_none:'0' }}</small>
+          <small class="text-secondary" style="width:20px;text-align:right">{{ item.count }}</small>
         </div>
-        {% endwith %}{% endfor %}
+        {% endfor %}
       </div>
+
+      <!-- Stats -->
       <div class="row g-2 text-center">
-        <div class="col-6"><div class="border rounded p-2"><div style="font-size:18px;font-weight:500">{{ profile.total_ventas }}</div><div class="text-secondary" style="font-size:10px;text-transform:uppercase;letter-spacing:.7px">Ventas</div></div></div>
-        <div class="col-6"><div class="border rounded p-2"><div style="font-size:14px;font-weight:500">100%</div><div class="text-secondary" style="font-size:10px;text-transform:uppercase;letter-spacing:.7px">Completadas</div></div></div>
+        <div class="col-6">
+          <div class="border rounded p-2">
+            <div style="font-size:18px;font-weight:500">{{ profile.total_ventas }}</div>
+            <div class="text-secondary" style="font-size:10px;text-transform:uppercase;letter-spacing:.7px">Ventas</div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="border rounded p-2">
+            <div style="font-size:14px;font-weight:500">100%</div>
+            <div class="text-secondary" style="font-size:10px;text-transform:uppercase;letter-spacing:.7px">Completadas</div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- Contenido principal -->
     <div class="col-lg-8">
       <h5 class="mb-3">Pares disponibles ({{ listings.count }})</h5>
       <div class="listings-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr))">
         {% for l in listings %}
         <div class="listing-card">
           <a href="{{ l.get_absolute_url }}" class="card-link">
-            <div class="card-img-wrap">
-              {% if l.images.first %}<img src="{{ l.images.first.imagen.url }}" alt="{{ l.nombre }}" class="card-img">
-              {% else %}<div class="card-img-placeholder" style="font-size:40px">👟</div>{% endif %}
-              <span class="cond-badge badge-{{ l.condicion }}">{{ l.get_condicion_display }}</span>
+            <div class="card-img-wrap" style="height:150px">
+              {% if l.images.first %}
+              <img src="{{ l.images.first.imagen.url }}" alt="{{ l.nombre }}" class="card-img">
+              {% else %}
+              <div class="card-img-placeholder">👟</div>
+              {% endif %}
+              <span class="cond-badge badge-{{ l.condicion }}">{{ l.condicion|upper }}</span>
             </div>
             <div class="card-body-inner">
               <div class="card-brand">{{ l.marca }}</div>
               <div class="card-name">{{ l.nombre }}</div>
-              <div class="d-flex justify-content-between">
-                <span class="card-size">T{{ l.talla }}</span>
+              <div class="d-flex justify-content-between align-items-center">
+                {% if l.talla %}<span class="card-size">T{{ l.talla }}</span>{% else %}<span></span>{% endif %}
                 <span class="card-price">{{ l.precio_fmt }}</span>
               </div>
             </div>
           </a>
         </div>
-        {% empty %}<p class="text-secondary" style="font-size:13px">No hay publicaciones activas.</p>
+        {% empty %}
+        <p class="text-secondary" style="font-size:13px">No hay publicaciones activas.</p>
         {% endfor %}
       </div>
-      <h5 class="mt-4 mb-3">Reseñas</h5>
+
+      <!-- Reseñas -->
+      <h5 class="mt-4 mb-3">Reseñas ({{ total_rev }})</h5>
       {% for review in reviews|slice:":10" %}
       <div class="review-card mb-3">
         <div class="d-flex align-items-center gap-2 mb-1">
-          <span class="text-warning">{% for i in '12345' %}{% if forloop.counter <= review.estrellas %}★{% else %}<span class="text-secondary">★</span>{% endif %}{% endfor %}</span>
+          <span class="text-warning">
+            {% for i in '12345' %}{% if forloop.counter <= review.estrellas %}★{% else %}<span class="text-secondary">★</span>{% endif %}{% endfor %}
+          </span>
           <strong style="font-size:13px">{{ review.autor.username }}</strong>
           <small class="text-secondary ms-auto">{{ review.creado|timesince }} atrás</small>
         </div>
         <p class="mb-1" style="font-size:13px;color:var(--text-secondary)">{{ review.comentario }}</p>
-        {% if review.listing %}<small class="text-secondary"><i class="bi bi-box me-1"></i>{{ review.listing.nombre }}</small>{% endif %}
+        {% if review.listing %}
+        <small class="text-secondary"><i class="bi bi-box me-1"></i>{{ review.listing.nombre }}</small>
+        {% endif %}
       </div>
-      {% empty %}<p class="text-secondary" style="font-size:13px">Sin reseñas aún.</p>
+      {% empty %}
+      <p class="text-secondary" style="font-size:13px">Sin reseñas aún.</p>
       {% endfor %}
     </div>
+
   </div>
 </div>
 {% endblock %}

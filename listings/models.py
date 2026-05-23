@@ -27,30 +27,88 @@ class SellerProfile(models.Model):
 
 
 class Listing(models.Model):
-    CONDICION_CHOICES = [
-        ('new', 'Nueva'),
-        ('used', 'Usada'),
-        ('rare', 'Edición limitada'),
+
+    # Categorías principales
+    CATEGORIA_CHOICES = [
+        ('zapatillas', 'Zapatillas'),
+        ('streetwear', 'Streetwear'),
+        ('accesorios', 'Accesorios Sneaker'),
+        ('coleccion', 'Colección'),
     ]
+
+    # Subcategorías por categoría
+    SUBCATEGORIA_CHOICES = [
+        # Zapatillas
+        ('running', 'Running'),
+        ('basketball', 'Basketball'),
+        ('lifestyle', 'Lifestyle'),
+        ('skate', 'Skate'),
+        ('training', 'Training / Gym'),
+        ('boots', 'Boots'),
+        # Streetwear
+        ('polera', 'Polera / T-Shirt'),
+        ('hoodie', 'Hoodie / Poleron'),
+        ('pants', 'Pants / Joggers'),
+        ('chaqueta', 'Chaqueta / Jacket'),
+        ('gorro', 'Gorro / Cap'),
+        ('calcetines', 'Calcetines'),
+        # Accesorios sneaker
+        ('cordones', 'Cordones / Laces'),
+        ('cleaning', 'Cleaning Kit'),
+        ('insoles', 'Plantillas / Insoles'),
+        ('shields', 'Crease Protectors / Shields'),
+        ('cajas', 'Cajas / Display'),
+        ('bolso', 'Bolso / Cartera'),
+        ('lentes', 'Lentes'),
+        # Colección
+        ('figura', 'Figura / Funko'),
+        ('poster', 'Poster / Art Print'),
+        ('libro', 'Libro / Revista'),
+        ('otro_col', 'Otro coleccionable'),
+    ]
+
+    CONDICION_CHOICES = [
+        ('ds', 'DS — Deadstock (sin usar, caja original)'),
+        ('vnds', 'VNDS — Very Near Deadstock (1-2 usos)'),
+        ('used', 'Used — Usada (buen estado)'),
+        ('beater', 'Beater — Muy usada'),
+    ]
+
     DESPACHO_CHOICES = [
         ('yes', 'Todo Chile'),
         ('local', 'Solo presencial'),
         ('both', 'Envío y presencial'),
     ]
+
     MARCA_CHOICES = [
-        ('Nike', 'Nike'), ('Adidas', 'Adidas'), ('Jordan', 'Jordan'),
-        ('New Balance', 'New Balance'), ('Puma', 'Puma'), ('Vans', 'Vans'),
-        ('Converse', 'Converse'), ('Asics', 'Asics'), ('Reebok', 'Reebok'),
+        # Zapatillas
+        ('Nike', 'Nike'), ('Jordan', 'Jordan'), ('Adidas', 'Adidas'),
+        ('New Balance', 'New Balance'), ('Asics', 'Asics'), ('Puma', 'Puma'),
+        ('Vans', 'Vans'), ('Converse', 'Converse'), ('Reebok', 'Reebok'),
+        ('Saucony', 'Saucony'), ('On Running', 'On Running'), ('Salehe', 'Salehe'),
+        ('Yeezy', 'Yeezy'), ('Off-White', 'Off-White'), ('Travis Scott', 'Travis Scott'),
+        # Streetwear
+        ('Supreme', 'Supreme'), ('Palace', 'Palace'), ('Stüssy', 'Stüssy'),
+        ('BAPE', 'BAPE'), ('Carhartt', 'Carhartt WIP'), ('Dickies', 'Dickies'),
+        ('Anti Social', 'Anti Social Social Club'), ('Kith', 'Kith'),
+        # Accesorios
+        ('Crep Protect', 'Crep Protect'), ('Jason Markk', 'Jason Markk'),
+        ('Reshoevn8r', 'Reshoevn8r'), ('Huf', 'HUF'), ('Stance', 'Stance'),
         ('Otra', 'Otra'),
     ]
 
     vendedor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='listings')
+    categoria = models.CharField(max_length=20, choices=CATEGORIA_CHOICES, default='zapatillas')
+    subcategoria = models.CharField(max_length=20, choices=SUBCATEGORIA_CHOICES, default='lifestyle', blank=True)
     marca = models.CharField(max_length=50, choices=MARCA_CHOICES)
     nombre = models.CharField(max_length=200)
+    colorway = models.CharField(max_length=100, blank=True, help_text='ej: Black/White, Bred, University Blue')
     descripcion = models.TextField(blank=True)
-    talla = models.CharField(max_length=10)
+    talla = models.CharField(max_length=10, blank=True)
     precio = models.PositiveIntegerField()
+    precio_original = models.PositiveIntegerField(null=True, blank=True, help_text='Precio de retail original')
     condicion = models.CharField(max_length=10, choices=CONDICION_CHOICES, default='used')
+    caja_original = models.BooleanField(default=False)
     despacho = models.CharField(max_length=10, choices=DESPACHO_CHOICES, default='yes')
     ciudad = models.CharField(max_length=100, default='Santiago')
     activa = models.BooleanField(default=True)
@@ -66,6 +124,28 @@ class Listing(models.Model):
 
     def precio_fmt(self):
         return f'${self.precio:,}'.replace(',', '.')
+
+    def precio_original_fmt(self):
+        if self.precio_original:
+            return f'${self.precio_original:,}'.replace(',', '.')
+        return None
+
+    def descuento_pct(self):
+        if self.precio_original and self.precio_original > 0:
+            return round((1 - self.precio / self.precio_original) * 100)
+        return None
+
+    def condicion_badge(self):
+        badges = {
+            'ds': ('DS', 'badge-ds'),
+            'vnds': ('VNDS', 'badge-vnds'),
+            'used': ('USED', 'badge-used'),
+            'beater': ('BEATER', 'badge-beater'),
+        }
+        return badges.get(self.condicion, ('', ''))
+
+    def es_zapatilla(self):
+        return self.categoria == 'zapatillas'
 
     def __str__(self):
         return f'{self.marca} {self.nombre} - {self.vendedor.username}'

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}SoleMarket — Compra y vende zapatillas en Chile{% endblock %}
+{% block title %}SoleMarket — El marketplace de la cultura sneaker en Chile{% endblock %}
 
 {% block content %}
 
@@ -11,15 +11,56 @@
     <div class="row align-items-end g-4">
       <div class="col-lg-7">
         <span class="free-pill mb-2 d-inline-flex"><i class="bi bi-gift me-1"></i> 100% gratis — sin comisiones</span>
-        <h1 class="display-banner mb-2">VENDE TUS<br>ZAPATILLAS</h1>
-        <p class="text-secondary mb-3">Publica tu par en minutos y llega a compradores en todo Chile.</p>
-        <a href="{% url 'listing_create' %}" class="btn btn-dark btn-sm px-3 me-2">
-          <i class="bi bi-camera me-1"></i> Publicar par
+        <h1 class="display-banner mb-2">LA CULTURA<br>SNEAKER<br>EN UN SOLO LUGAR</h1>
+        <p class="text-secondary mb-3">Zapatillas, streetwear y accesorios para sneakerheads. Publica en segundos.</p>
+        <a href="{% url 'listing_create' %}" class="btn btn-dark btn-sm px-3">
+          <i class="bi bi-plus-lg me-1"></i> Publicar ahora
         </a>
         <div class="how-steps d-inline-flex mt-3">
           <div class="how-step"><span class="how-n">1</span><small>Sube fotos</small></div>
           <div class="how-step"><span class="how-n">2</span><small>Agrega datos</small></div>
           <div class="how-step"><span class="how-n">3</span><small>Publica gratis</small></div>
+        </div>
+
+        <!-- Hero Carousel -->
+        <div class="hero-carousel mt-3" id="heroCarousel">
+          <div class="hero-slide active" style="background:linear-gradient(135deg,#0f0f0f,#1a1a2e)">
+            <div class="hero-slide-text">
+              <div class="hero-slide-tag">🔥 Tendencia ahora</div>
+              <div class="hero-slide-title">JORDAN<br>RETROS</div>
+              <div class="hero-slide-sub">Los clásicos que nunca pasan de moda</div>
+              <a href="?marca=Jordan" class="hero-slide-btn">Ver Jordans →</a>
+            </div>
+            <div class="hero-slide-emoji">👟</div>
+          </div>
+          <div class="hero-slide" style="background:linear-gradient(135deg,#1a0a00,#3d1f00)">
+            <div class="hero-slide-text">
+              <div class="hero-slide-tag">⚡ Deadstock</div>
+              <div class="hero-slide-title">YEEZY<br>SEASON</div>
+              <div class="hero-slide-sub">DS y VNDS disponibles</div>
+              <a href="?marca=Yeezy" class="hero-slide-btn">Ver Yeezys →</a>
+            </div>
+            <div class="hero-slide-emoji">🔥</div>
+          </div>
+          <div class="hero-slide" style="background:linear-gradient(135deg,#0a1a0a,#0f3d0f)">
+            <div class="hero-slide-text">
+              <div class="hero-slide-tag">🧴 Accesorios</div>
+              <div class="hero-slide-title">CUIDA<br>TUS KICKS</div>
+              <div class="hero-slide-sub">Cleaning kits, laces y más</div>
+              <a href="?categoria=accesorios" class="hero-slide-btn">Ver accesorios →</a>
+            </div>
+            <div class="hero-slide-emoji">✨</div>
+          </div>
+          <div class="hero-slide" style="background:linear-gradient(135deg,#1a001a,#2d0030)">
+            <div class="hero-slide-text">
+              <div class="hero-slide-tag">👕 Streetwear</div>
+              <div class="hero-slide-title">VISTE<br>LA CULTURA</div>
+              <div class="hero-slide-sub">Supreme, Palace, Stüssy y más</div>
+              <a href="?categoria=streetwear" class="hero-slide-btn">Ver streetwear →</a>
+            </div>
+            <div class="hero-slide-emoji">🕶️</div>
+          </div>
+          <div class="hero-dots" id="heroDots"></div>
         </div>
       </div>
       <div class="col-lg-5">
@@ -38,22 +79,50 @@
   </div>
 </div>
 
+<!-- Categorías -->
+<div class="border-bottom" style="background:#fff;">
+  <div class="container-fluid px-4 py-2 d-flex gap-2 overflow-auto">
+    <a href="{% url 'index' %}" class="cat-tab {% if not filtros.categoria %}on{% endif %}">
+      <i class="bi bi-grid-3x3-gap me-1"></i>Todo
+    </a>
+    <a href="?categoria=zapatillas" class="cat-tab {% if filtros.categoria == 'zapatillas' %}on{% endif %}">
+      👟 Zapatillas
+    </a>
+    <a href="?categoria=streetwear" class="cat-tab {% if filtros.categoria == 'streetwear' %}on{% endif %}">
+      👕 Streetwear
+    </a>
+    <a href="?categoria=accesorios" class="cat-tab {% if filtros.categoria == 'accesorios' %}on{% endif %}">
+      🧴 Accesorios
+    </a>
+    <a href="?categoria=coleccion" class="cat-tab {% if filtros.categoria == 'coleccion' %}on{% endif %}">
+      🏆 Colección
+    </a>
+  </div>
+</div>
+
 <!-- Filtros -->
 <div class="filters-bar border-bottom">
   <div class="container-fluid px-4 py-2">
     <form method="GET" class="d-flex align-items-center gap-2 flex-wrap">
+      {% if filtros.categoria %}
+      <input type="hidden" name="categoria" value="{{ filtros.categoria }}">
+      {% endif %}
       <div class="input-search">
         <i class="bi bi-search"></i>
-        <input type="text" name="q" value="{{ filtros.q }}" placeholder="Marca, modelo..." class="form-control form-control-sm" style="padding-left:30px">
+        <input type="text" name="q" value="{{ filtros.q }}" placeholder="Marca, modelo, colorway..." class="form-control form-control-sm" style="padding-left:30px">
       </div>
-      {% for valor, label in marcas %}
-      <button type="submit" name="marca" value="{{ valor }}"
-        class="chip {% if filtros.marca == valor %}on{% endif %}">{{ valor }}</button>
-      {% endfor %}
-      <button type="submit" name="condicion" value="new"
-        class="chip {% if filtros.condicion == 'new' %}on{% endif %}">Nuevas</button>
+      <!-- Condición sneakerhead -->
+      <button type="submit" name="condicion" value="ds" class="chip {% if filtros.condicion == 'ds' %}on{% endif %}">DS</button>
+      <button type="submit" name="condicion" value="vnds" class="chip {% if filtros.condicion == 'vnds' %}on{% endif %}">VNDS</button>
+      <button type="submit" name="condicion" value="used" class="chip {% if filtros.condicion == 'used' %}on{% endif %}">Used</button>
+      <!-- Marcas top -->
+      <button type="submit" name="marca" value="Nike" class="chip {% if filtros.marca == 'Nike' %}on{% endif %}">Nike</button>
+      <button type="submit" name="marca" value="Jordan" class="chip {% if filtros.marca == 'Jordan' %}on{% endif %}">Jordan</button>
+      <button type="submit" name="marca" value="Adidas" class="chip {% if filtros.marca == 'Adidas' %}on{% endif %}">Adidas</button>
+      <button type="submit" name="marca" value="New Balance" class="chip {% if filtros.marca == 'New Balance' %}on{% endif %}">New Balance</button>
+      <button type="submit" name="marca" value="Yeezy" class="chip {% if filtros.marca == 'Yeezy' %}on{% endif %}">Yeezy</button>
       {% if filtros.marca or filtros.condicion or filtros.q %}
-      <a href="{% url 'index' %}" class="chip">✕ Limpiar</a>
+      <a href="{% url 'index' %}{% if filtros.categoria %}?categoria={{ filtros.categoria }}{% endif %}" class="chip">✕ Limpiar</a>
       {% endif %}
       <div class="ms-auto d-flex align-items-center gap-1">
         <small class="text-secondary">Ordenar</small>
@@ -70,32 +139,46 @@
 <!-- Grid -->
 <div class="listings-grid">
   {% for listing in listings %}
+  {% with badge=listing.condicion_badge %}
   <div class="listing-card">
     <a href="{{ listing.get_absolute_url }}" class="card-link">
       <div class="card-img-wrap">
         {% if listing.images.first %}
         <img src="{{ listing.images.first.imagen.url }}" alt="{{ listing.nombre }}" class="card-img">
         {% else %}
-        <div class="card-img-placeholder">👟</div>
+        <div class="card-img-placeholder">
+          {% if listing.categoria == 'zapatillas' %}👟
+          {% elif listing.categoria == 'streetwear' %}👕
+          {% elif listing.categoria == 'accesorios' %}🧴
+          {% else %}🏆{% endif %}
+        </div>
         {% endif %}
-        <span class="cond-badge badge-{{ listing.condicion }}">{{ listing.get_condicion_display }}</span>
+        <!-- Badge condición sneakerhead -->
+        <span class="cond-badge {{ badge.1 }}">{{ badge.0 }}</span>
+        {% if listing.caja_original %}
+        <span class="box-badge"><i class="bi bi-box-seam"></i> Box</span>
+        {% endif %}
       </div>
       <div class="card-body-inner">
-        <div class="card-brand">{{ listing.marca }}</div>
-        <div class="card-name">{{ listing.nombre }}</div>
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <div class="card-brand">{{ listing.marca }}</div>
+          <div class="cat-pill cat-{{ listing.categoria }}">{{ listing.get_categoria_display }}</div>
+        </div>
+        <div class="card-name">{{ listing.nombre }}{% if listing.colorway %} <span class="colorway">{{ listing.colorway }}</span>{% endif %}</div>
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="card-size">Talla {{ listing.talla }}</span>
-          <span class="card-price">{{ listing.precio_fmt }}</span>
+          {% if listing.talla %}<span class="card-size">T{{ listing.talla }}</span>{% else %}<span></span>{% endif %}
+          <div class="text-end">
+            <span class="card-price">{{ listing.precio_fmt }}</span>
+            {% if listing.descuento_pct %}
+            <div class="descuento-badge">-{{ listing.descuento_pct }}%</div>
+            {% endif %}
+          </div>
         </div>
         <div class="d-flex align-items-center gap-1">
-          <div class="seller-av" style="background: var(--av-{{ listing.vendedor.username|first|lower }})">
-            {{ listing.vendedor.username|slice:':2'|upper }}
-          </div>
+          <div class="seller-av">{{ listing.vendedor.username|slice:':2'|upper }}</div>
           <span class="seller-name text-truncate">{{ listing.vendedor.username }}</span>
           {% with profile=listing.vendedor.seller_profile %}
-          {% if profile.rating_promedio %}
-          <span class="ms-auto card-rating">★ {{ profile.rating_promedio }}</span>
-          {% endif %}
+          {% if profile.rating_promedio %}<span class="ms-auto card-rating">★ {{ profile.rating_promedio }}</span>{% endif %}
           {% endwith %}
         </div>
       </div>
@@ -107,10 +190,11 @@
     </button>
     {% endif %}
   </div>
+  {% endwith %}
   {% empty %}
   <div class="empty-state">
     <i class="bi bi-emoji-frown"></i>
-    <p>No se encontraron zapatillas con ese filtro.</p>
+    <p>No hay publicaciones con ese filtro todavía.</p>
     <a href="{% url 'listing_create' %}" class="btn btn-dark btn-sm">Sé el primero en publicar</a>
   </div>
   {% endfor %}
@@ -120,6 +204,7 @@
 
 {% block scripts %}
 <script>
+// Favoritos
 function toggleFav(btn) {
   const pk = btn.dataset.pk;
   fetch(`/par/${pk}/favorito/`, {
@@ -133,5 +218,39 @@ function toggleFav(btn) {
     icon.className = data.en_favoritos ? 'bi bi-heart-fill' : 'bi bi-heart';
   });
 }
+
+// Hero Carousel
+(function() {
+  const slides = document.querySelectorAll('.hero-slide');
+  const dotsContainer = document.getElementById('heroDots');
+  if (!slides.length) return;
+
+  let current = 0;
+  let timer;
+
+  // Crear dots
+  slides.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'hero-dot' + (i === 0 ? ' active' : '');
+    dot.onclick = () => goTo(i);
+    dotsContainer.appendChild(dot);
+  });
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    document.querySelectorAll('.hero-dot')[current].classList.remove('active');
+    current = (n + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    document.querySelectorAll('.hero-dot')[current].classList.add('active');
+    resetTimer();
+  }
+
+  function resetTimer() {
+    clearInterval(timer);
+    timer = setInterval(() => goTo(current + 1), 4000);
+  }
+
+  resetTimer();
+})();
 </script>
 {% endblock %}

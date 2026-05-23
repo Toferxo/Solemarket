@@ -8,29 +8,23 @@
   <!-- Lista de conversaciones -->
   <div class="conv-sidebar">
     <div class="conv-sidebar-hdr">Conversaciones</div>
-    {% for conv in conversaciones %}
-    {% with otro=conv.otro_usuario(request.user) no_leidos=conv.mensajes_no_leidos(request.user) %}
-    <a href="?conv={{ conv.pk }}"
-      class="conv-item {% if conv_activa and conv_activa.pk == conv.pk %}active{% endif %} {% if no_leidos %}unread{% endif %}">
-      <div class="conv-av-sm">{{ otro.username|slice:':2'|upper }}</div>
+    {% for item in convs_data %}
+    <a href="?conv={{ item.conv.pk }}"
+      class="conv-item {% if conv_activa and conv_activa.pk == item.conv.pk %}active{% endif %} {% if item.no_leidos %}conv-unread{% endif %}">
+      <div class="conv-av-sm">{{ item.otro.username|slice:':2'|upper }}</div>
       <div class="conv-item-info">
-        <div class="conv-item-name">{{ otro.username }}</div>
-        {% with last=conv.mensajes.last %}
-        {% if last %}
+        <div class="conv-item-name">{{ item.otro.username }}</div>
+        {% if item.ultimo %}
         <div class="conv-item-last">
-          {% if last.autor == request.user %}Tú: {% endif %}{{ last.contenido|truncatechars:40 }}
+          {% if item.ultimo.autor == request.user %}Tú: {% endif %}{{ item.ultimo.contenido|truncatechars:40 }}
         </div>
         {% endif %}
-        {% endwith %}
       </div>
       <div class="conv-item-meta">
-        {% with last=conv.mensajes.last %}
-        {% if last %}<div class="conv-time">{{ last.creado|time:'H:i' }}</div>{% endif %}
-        {% endwith %}
-        {% if no_leidos %}<div class="conv-dot">{{ no_leidos }}</div>{% endif %}
+        {% if item.ultimo %}<div class="conv-time">{{ item.ultimo.creado|time:'H:i' }}</div>{% endif %}
+        {% if item.no_leidos %}<div class="conv-dot">{{ item.no_leidos }}</div>{% endif %}
       </div>
     </a>
-    {% endwith %}
     {% empty %}
     <div class="p-4 text-center text-secondary" style="font-size:13px">
       <i class="bi bi-chat d-block mb-2" style="font-size:28px"></i>
@@ -42,23 +36,22 @@
 
   <!-- Chat activo -->
   <div class="chat-main">
-    {% if conv_activa %}
-    {% with otro=conv_activa.otro_usuario(request.user) %}
+    {% if conv_activa and otro_activo %}
 
     <div class="chat-top">
-      <div class="conv-av-sm">{{ otro.username|slice:':2'|upper }}</div>
+      <div class="conv-av-sm">{{ otro_activo.username|slice:':2'|upper }}</div>
       <div class="flex-grow-1">
         <div class="chat-top-name">
-          {{ otro.username }}
-          {% with p=otro.seller_profile %}
+          {{ otro_activo.username }}
+          {% with p=otro_activo.seller_profile %}
           {% if p.verificado %}<span class="ms-2 text-success" style="font-size:11px">✓ Verificado</span>{% endif %}
           {% endwith %}
         </div>
         <div class="chat-top-sub text-secondary">
-          {% with p=otro.seller_profile %}★ {{ p.rating_promedio }} · {{ p.total_ventas }} ventas{% endwith %}
+          {% with p=otro_activo.seller_profile %}★ {{ p.rating_promedio }} · {{ p.total_ventas }} ventas{% endwith %}
         </div>
       </div>
-      <a href="{% url 'seller_profile' otro.username %}" class="btn btn-sm btn-outline-secondary">Ver perfil</a>
+      <a href="{% url 'seller_profile' otro_activo.username %}" class="btn btn-sm btn-outline-secondary">Ver perfil</a>
     </div>
 
     {% if conv_activa.listing %}
@@ -108,7 +101,6 @@
       <button class="btn-send-msg" onclick="sendMsg()"><i class="bi bi-send"></i></button>
     </div>
 
-    {% endwith %}
     {% else %}
     <div class="chat-empty">
       <i class="bi bi-chat-left d-block mb-2" style="font-size:32px"></i>
@@ -123,7 +115,6 @@
 {% if conv_activa %}
 <script>
 const convId = {{ conv_activa.pk }};
-const myUsername = '{{ request.user.username }}';
 let lastMsgId = {% with last=conv_activa.mensajes.last %}{% if last %}{{ last.pk }}{% else %}0{% endif %}{% endwith %};
 
 function scrollBottom() {
@@ -142,20 +133,13 @@ function sendMsg() {
   const txt = inp.value.trim();
   if (!txt) return;
   inp.value = '';
-
   fetch(`/mensajes/enviar/${convId}/`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': '{{ csrf_token }}',
-    },
+    headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}'},
     body: JSON.stringify({ contenido: txt }),
   })
   .then(r => r.json())
-  .then(msg => {
-    appendMsg(msg);
-    lastMsgId = msg.id;
-  });
+  .then(msg => { appendMsg(msg); lastMsgId = msg.id; });
 }
 
 function appendMsg(msg) {
@@ -165,15 +149,11 @@ function appendMsg(msg) {
   div.dataset.id = msg.id;
   div.innerHTML = `
     ${!msg.es_mio ? `<div class="msg-av-tiny">${msg.autor.slice(0,2).toUpperCase()}</div>` : ''}
-    <div>
-      <div class="msg-bubble">${msg.contenido}</div>
-      <div class="msg-time">${msg.creado}</div>
-    </div>`;
+    <div><div class="msg-bubble">${msg.contenido}</div><div class="msg-time">${msg.creado}</div></div>`;
   container.appendChild(div);
   scrollBottom();
 }
 
-// Polling cada 3 segundos
 setInterval(() => {
   fetch(`/mensajes/poll/${convId}/?desde=${lastMsgId}`)
     .then(r => r.json())

@@ -18,18 +18,33 @@ def inbox(request):
     conv_activa = None
     conv_id = request.GET.get('conv')
     if conv_id:
-        conv_activa = get_object_or_404(
-            Conversation, pk=conv_id
-        )
+        conv_activa = get_object_or_404(Conversation, pk=conv_id)
         if request.user not in [conv_activa.comprador, conv_activa.vendedor]:
             return redirect('inbox')
         conv_activa.mensajes.filter(leido=False).exclude(autor=request.user).update(leido=True)
 
-    total_no_leidos = sum(c.mensajes_no_leidos(request.user) for c in conversaciones)
+    # Preparar datos para el template (Django no permite llamar métodos con args en templates)
+    convs_data = []
+    total_no_leidos = 0
+    for conv in conversaciones:
+        otro = conv.vendedor if request.user == conv.comprador else conv.comprador
+        no_leidos = conv.mensajes.filter(leido=False).exclude(autor=request.user).count()
+        total_no_leidos += no_leidos
+        convs_data.append({
+            'conv': conv,
+            'otro': otro,
+            'no_leidos': no_leidos,
+            'ultimo': conv.mensajes.last(),
+        })
+
+    otro_activo = None
+    if conv_activa:
+        otro_activo = conv_activa.vendedor if request.user == conv_activa.comprador else conv_activa.comprador
 
     return render(request, 'messaging/inbox.html', {
-        'conversaciones': conversaciones,
+        'convs_data': convs_data,
         'conv_activa': conv_activa,
+        'otro_activo': otro_activo,
         'total_no_leidos': total_no_leidos,
     })
 
